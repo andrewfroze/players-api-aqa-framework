@@ -1,0 +1,54 @@
+plugins {
+    id 'java'
+    id 'io.qameta.allure' version '2.11.2'
+}
+
+group = 'org.andrewfroze'
+version = '1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation "org.testng:testng:$testNgVersion"
+    implementation "org.testng:testng:$testNgVersion"
+    implementation "io.rest-assured:rest-assured:$restAssuredVersion"
+    testImplementation "io.rest-assured:rest-assured:$restAssuredVersion"
+    testImplementation "io.qameta.allure:allure-testng:$allureVersion"
+    implementation "io.qameta.allure:allure-rest-assured:$allureVersion"
+    implementation "org.slf4j:slf4j-api:$sl4jVersion"
+    implementation "ch.qos.logback:logback-classic:$logbackVersion"
+    implementation "com.google.code.gson:gson:$gsonVersion"
+}
+
+test {
+    def props = new Properties()
+    file('src/test/resources/application.properties').withInputStream { props.load(it) }
+    def threads = props.getProperty('threads', '1').toInteger()
+    def parallelMethod = props.getProperty('parallel', 'classes').toString()
+
+    useTestNG() {
+        suites "src/test/resources/testng.xml"
+        options {
+            parallel = parallelMethod
+            threadCount = threads
+        }
+    }
+
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+allure {
+    version = '2.20.1'
+    autoconfigure = true
+    aspectjweaver = true
+}
